@@ -1,0 +1,60 @@
+#lang ivy1.7
+
+const i = 0
+const t = 1
+const c = 2
+const e = 3
+
+type node
+
+individual n(Y:node) : int
+
+individual x : bool
+
+after init{
+    n(S) := i;
+    x := true;
+}
+
+action try = {
+    local i_lv : node
+     {
+        assume n(i_lv) = i;
+        n(i_lv) := t;
+    }
+}
+
+action crit = {
+    local i_lv : node
+     {
+        assume n(i_lv) = t & x = true;
+        n(i_lv) := c;
+        x := false;
+    }
+}
+
+action exit = {
+    local i_lv : node
+     {
+        assume n(i_lv) = c;
+        n(i_lv) := e;
+    }
+}
+
+action idle = {
+    local i_lv : node
+     {
+        assume n(i_lv) = e;
+        n(i_lv) := i;
+        x := true;
+    }
+}
+
+conjecture  I ~= J -> (n(I) = c -> n(J) ~= c)
+
+
+
+export try
+export crit
+export exit
+export idle

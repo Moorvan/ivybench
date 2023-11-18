@@ -1,0 +1,262 @@
+#lang ivy1.7
+
+type node_t
+
+type data_t
+
+type cache_state_t = {i_em, s_em, e_em}
+
+type msg_cmd1_t = {empty1_em, reqs_em, reqe_em}
+
+type msg_cmd2_t = {empty2_em, inv_em, gnts_em, gnte_em}
+
+type msg_cmd3_t = {empty3_em, invack_em}
+
+individual cache_v_State(P:node_t) : cache_state_t
+individual cache_v_Data(F:node_t) : data_t
+
+individual chan1_v_Cmd(H:node_t) : msg_cmd1_t
+individual chan1_v_Data(D:node_t) : data_t
+
+individual chan2_v_Cmd(W:node_t) : msg_cmd2_t
+individual chan2_v_Data(B:node_t) : data_t
+
+individual chan3_v_Cmd(U:node_t) : msg_cmd3_t
+individual chan3_v_Data(X:node_t) : data_t
+
+individual invset_v(E:node_t) : bool
+individual shrset_v(J:node_t) : bool
+individual exgntd_v : bool
+individual curcmd_v : msg_cmd1_t
+individual curptr_v : node_t
+individual memdata_v : data_t
+individual auxdata_v : data_t
+
+
+after init{
+    require chan1_v_Cmd(B) = empty1_em;
+    
+    require chan2_v_Cmd(B) = empty2_em;
+    
+    require chan3_v_Cmd(B) = empty3_em;
+    
+    require chan1_v_Data(B) = A;
+    
+    require chan2_v_Data(B) = A;
+    
+    require chan3_v_Data(B) = A;
+    
+    require cache_v_State(B) = i_em;
+    
+    require cache_v_Data(B) = A;
+    
+    require invset_v(B) = false;
+    
+    require shrset_v(B) = false;
+    
+    require memdata_v = A;
+    
+    require auxdata_v = A;
+    
+    require exgntd_v = false;
+
+require curcmd_v = empty1_em;
+
+}
+
+
+action recvgnte = {
+    local i: node_t {
+    require chan2_v_Cmd(i) = gnte_em;
+    cache_v_State(i) := e_em;
+        cache_v_Data(i) := chan2_v_Data(i);
+        chan2_v_Cmd(i) := empty2_em;
+    }
+}
+
+
+
+action recvgnts = {
+    local i: node_t {
+    require chan2_v_Cmd(i) = gnts_em;
+    cache_v_State(i) := s_em;
+        cache_v_Data(i) := chan2_v_Data(i);
+        chan2_v_Cmd(i) := empty2_em;
+    }
+}
+
+
+
+action sendgnte = {
+    local i: node_t {
+    require curcmd_v = reqe_em & curptr_v = i & chan2_v_Cmd(i) = empty2_em & exgntd_v = false & shrset_v(A) = false;
+    chan2_v_Cmd(i) := gnte_em;
+        chan2_v_Data(i) := memdata_v;
+        shrset_v(i) := true;
+        exgntd_v := true;
+        curcmd_v := empty1_em;
+    }
+}
+
+
+
+action sendgnts = {
+    local i: node_t {
+    require curcmd_v = reqs_em & curptr_v = i & chan2_v_Cmd(i) = empty2_em & exgntd_v = false;
+    chan2_v_Cmd(i) := gnts_em;
+        chan2_v_Data(i) := memdata_v;
+        shrset_v(i) := true;
+        curcmd_v := empty1_em;
+    }
+}
+
+
+
+action recvinvack1 = {
+    local i: node_t {
+    require chan3_v_Cmd(i) = invack_em & curcmd_v ~= empty1_em & exgntd_v = true;
+    chan3_v_Cmd(i) := empty3_em;
+        shrset_v(i) := false;
+        exgntd_v := false;
+        memdata_v := chan3_v_Data(i);
+    }
+}
+
+
+
+action recvinvack2 = {
+    local i: node_t {
+    require chan3_v_Cmd(i) = invack_em & curcmd_v ~= empty1_em & exgntd_v ~= true;
+    chan3_v_Cmd(i) := empty3_em;
+        shrset_v(i) := false;
+    }
+}
+
+
+
+action sendinvack1 = {
+    local i: node_t {
+    require chan2_v_Cmd(i) = inv_em & chan3_v_Cmd(i) = empty3_em & cache_v_State(i) = e_em;
+    chan2_v_Cmd(i) := empty2_em;
+        chan3_v_Cmd(i) := invack_em;
+        chan3_v_Data(i) := cache_v_Data(i);
+        cache_v_State(i) := i_em;
+    }
+}
+
+
+
+action sendinvack2 = {
+    local i: node_t {
+    require chan2_v_Cmd(i) = inv_em & chan3_v_Cmd(i) = empty3_em & cache_v_State(i) ~= e_em;
+    chan2_v_Cmd(i) := empty2_em;
+        chan3_v_Cmd(i) := invack_em;
+        cache_v_State(i) := i_em;
+    }
+}
+
+
+
+action sendinv1 = {
+    local i: node_t {
+    require chan2_v_Cmd(i) = empty2_em & invset_v(i) = true & curcmd_v = reqe_em;
+    chan2_v_Cmd(i) := inv_em;
+        invset_v(i) := false;
+    }
+}
+
+
+
+action sendinv2 = {
+    local i: node_t {
+    require chan2_v_Cmd(i) = empty2_em & invset_v(i) = true & curcmd_v = reqs_em & exgntd_v = true;
+    chan2_v_Cmd(i) := inv_em;
+        invset_v(i) := false;
+    }
+}
+
+
+
+action recvreqe = {
+    local i: node_t {
+    require curcmd_v = empty1_em & chan1_v_Cmd(i) = reqe_em;
+    curcmd_v := reqe_em;
+        curptr_v := i;
+        chan1_v_Cmd(i) := empty1_em;
+        invset_v(A) := shrset_v(A);
+    }
+}
+
+
+
+action recvreqs = {
+    local i: node_t {
+    require curcmd_v = empty1_em & chan1_v_Cmd(i) = reqs_em;
+    curcmd_v := reqs_em;
+        curptr_v := i;
+        chan1_v_Cmd(i) := empty1_em;
+        invset_v(A) := shrset_v(A);
+    }
+}
+
+
+
+action sendreqe1 = {
+    local i: node_t {
+    require chan1_v_Cmd(i) = empty1_em & cache_v_State(i) = i_em;
+    chan1_v_Cmd(i) := reqe_em;
+    }
+}
+
+
+
+action sendreqe2 = {
+    local i: node_t {
+    require chan1_v_Cmd(i) = empty1_em & cache_v_State(i) = s_em;
+    chan1_v_Cmd(i) := reqe_em;
+    }
+}
+
+
+
+action sendreqs = {
+    local i: node_t {
+    require chan1_v_Cmd(i) = empty1_em & cache_v_State(i) = i_em;
+    chan1_v_Cmd(i) := reqs_em;
+    }
+}
+
+
+
+action store = {
+    local d: data_t, i: node_t {
+    require cache_v_State(i) = e_em;
+    cache_v_Data(i) := d;
+        auxdata_v := d;
+    }
+}
+
+
+
+export recvgnte
+export recvgnts
+export sendgnte
+export sendgnts
+export recvinvack1
+export recvinvack2
+export sendinvack1
+export sendinvack2
+export sendinv1
+export sendinv2
+export recvreqe
+export recvreqs
+export sendreqe1
+export sendreqe2
+export sendreqs
+export store
+
+
+conjecture (A ~= B) ->   ((cache_v_State(A) = e_em) ->   cache_v_State(B) = i_em) & ((cache_v_State(A) = s_em) ->   cache_v_State(B) = i_em | cache_v_State(B) = s_em)
+
+conjecture ((exgntd_v = false) ->   memdata_v = auxdata_v) & ((cache_v_State(A) ~= i_em) ->   cache_v_Data(A) = auxdata_v)
+

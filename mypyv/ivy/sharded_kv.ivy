@@ -12,7 +12,7 @@ after init {
     table(N, K, V) := false;
     transfer_msg(N, K, V) := false;
     assume(owner(N1, K) & owner(N2, K) -> N1 = N2);
-#    assume(forall K. exists N. owner(N, K));
+    assume(forall K. exists N. owner(N, K));
 }
 
 action reshard(k: key, v: value, n_old: node, n_new: node) = {
