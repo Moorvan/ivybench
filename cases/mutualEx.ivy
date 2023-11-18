@@ -1,9 +1,6 @@
 #lang ivy1.7
 
-const i = 0
-const t = 1
-const c = 2
-const e = 3
+type state = enum{i, t, c, e}
 
 type node
 

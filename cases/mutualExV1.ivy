@@ -15,7 +15,12 @@ individual e : state
 after init{
     n(S) := i;
     x := true;
-    assume i ~= t & i ~= c & i ~= e & t ~= c & t ~= e & c ~= e;
+	assume i ~= t;
+	assume i ~= c;
+	assume i ~= e;
+	assume t ~= c;
+	assume t ~= e;
+	assume c ~= e;
 }
 
 action try = {
