@@ -2,21 +2,46 @@
 
 type node_t
 
-type cache_state_t = {cache_i_em, cache_s_em, cache_e_em}
+type cache_state_t
 
-type node_cmd_t = {node_none_em, node_get_em, node_getx_em}
+type node_cmd_t
 
-type uni_cmd_t = {uni_none_em, uni_get_em, uni_getx_em, uni_put_em, uni_putx_em, uni_nak_em}
+type uni_cmd_t
 
-type inv_cmd_t = {inv_none_em, inv_inv_em, inv_invack_em}
+type inv_cmd_t
 
-type rp_cmd_t = {rp_none_em, rp_replace_em}
+type rp_cmd_t
 
-type wb_cmd_t = {wb_none_em, wb_wb_em}
+type wb_cmd_t
 
-type shwb_cmd_t = {shwb_none_em, shwb_shwb_em, shwb_fack_em}
+type shwb_cmd_t
 
-type nakc_cmd_t = {nakc_none_em, nakc_nakc_em}
+type nakc_cmd_t
+
+individual cache_i_em : cache_state_t
+individual cache_s_em : cache_state_t
+individual cache_e_em : cache_state_t
+individual node_none_em : node_cmd_t
+individual node_get_em : node_cmd_t
+individual node_getx_em : node_cmd_t
+individual uni_none_em : uni_cmd_t
+individual uni_get_em : uni_cmd_t
+individual uni_getx_em : uni_cmd_t
+individual uni_put_em : uni_cmd_t
+individual uni_putx_em : uni_cmd_t
+individual uni_nak_em : uni_cmd_t
+individual inv_none_em : inv_cmd_t
+individual inv_inv_em : inv_cmd_t
+individual inv_invack_em : inv_cmd_t
+individual rp_none_em : rp_cmd_t
+individual rp_replace_em : rp_cmd_t
+individual wb_none_em : wb_cmd_t
+individual wb_wb_em : wb_cmd_t
+individual shwb_none_em : shwb_cmd_t
+individual shwb_shwb_em : shwb_cmd_t
+individual shwb_fack_em : shwb_cmd_t
+individual nakc_none_em : nakc_cmd_t
+individual nakc_nakc_em : nakc_cmd_t
 
 
 individual sta_v_Proc_ProcCmd(R:node_t) : node_cmd_t
@@ -137,7 +162,36 @@ after init{
     require sta_v_HomeInvMsg_Cmd = inv_none_em;
     
     require sta_v_HomeRpMsg_Cmd = rp_none_em;
-    
+   	assume cache_i_em ~= cache_s_em;
+	assume cache_i_em ~= cache_e_em;
+	assume cache_s_em ~= cache_e_em;
+	assume node_none_em ~= node_get_em;
+	assume node_none_em ~= node_getx_em;
+	assume node_get_em ~= node_getx_em;
+	assume uni_none_em ~= uni_get_em;
+	assume uni_none_em ~= uni_getx_em;
+	assume uni_none_em ~= uni_put_em;
+	assume uni_none_em ~= uni_putx_em;
+	assume uni_none_em ~= uni_nak_em;
+	assume uni_get_em ~= uni_getx_em;
+	assume uni_get_em ~= uni_put_em;
+	assume uni_get_em ~= uni_putx_em;
+	assume uni_get_em ~= uni_nak_em;
+	assume uni_getx_em ~= uni_put_em;
+	assume uni_getx_em ~= uni_putx_em;
+	assume uni_getx_em ~= uni_nak_em;
+	assume uni_put_em ~= uni_putx_em;
+	assume uni_put_em ~= uni_nak_em;
+	assume uni_putx_em ~= uni_nak_em;
+	assume inv_none_em ~= inv_inv_em;
+	assume inv_none_em ~= inv_invack_em;
+	assume inv_inv_em ~= inv_invack_em;
+	assume rp_none_em ~= rp_replace_em;
+	assume wb_none_em ~= wb_wb_em;
+	assume shwb_none_em ~= shwb_shwb_em;
+	assume shwb_none_em ~= shwb_fack_em;
+	assume shwb_shwb_em ~= shwb_fack_em;
+	assume nakc_none_em ~= nakc_nakc_em;
     }
 
 

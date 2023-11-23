@@ -1,29 +1,35 @@
 #lang ivy1.7
 
+type state
 type node
 
-function n(Y:node) : int
+individual n(Y:node) : state
 
 individual x : bool
 
+individual i : state
+individual t : state
+individual c : state
+individual e : state
+
 after init{
-    n(S) := 0;
+    n(S) := i;
     x := true;
 }
 
 action try = {
     local i_lv : node
      {
-        assume n(i_lv) = 0;
-        n(i_lv) := 1;
+        assume n(i_lv) = i;
+        n(i_lv) := t;
     }
 }
 
 action crit = {
     local i_lv : node
      {
-        assume n(i_lv) = 1 & x = true;
-        n(i_lv) := 2;
+        assume n(i_lv) = t & x = true;
+        n(i_lv) := c;
         x := false;
     }
 }
@@ -31,21 +37,21 @@ action crit = {
 action exit = {
     local i_lv : node
      {
-        assume n(i_lv) = 2;
-        n(i_lv) := 3;
+        assume n(i_lv) = c;
+        n(i_lv) := e;
     }
 }
 
 action idle = {
     local i_lv : node
      {
-        assume n(i_lv) = 3;
-        n(i_lv) := 0;
+        assume n(i_lv) = e;
+        n(i_lv) := i;
         x := true;
     }
 }
 
-conjecture  I ~= J -> (n(I) = 2 -> n(J) ~= 2)
+conjecture  I ~= J -> (n(I) = c -> n(J) ~= c)
 
 
 

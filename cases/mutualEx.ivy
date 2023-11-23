@@ -1,10 +1,10 @@
 #lang ivy1.7
 
-type state = enum{i, t, c, e}
+type state = {i, t, c, e}
 
 type node
 
-individual n(Y:node) : int
+individual n(Y:node) : state
 
 individual x : bool
 

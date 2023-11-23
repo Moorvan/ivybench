@@ -4,13 +4,25 @@ type node_t
 
 type data_t
 
-type cache_state_t = {i_em, s_em, e_em}
+type cache_state_t
+individual i_em : cache_state_t
+individual s_em : cache_state_t
+individual e_em : cache_state_t
 
-type msg_cmd1_t = {empty1_em, reqs_em, reqe_em}
+type msg_cmd1_t
+individual empty1_em : msg_cmd1_t
+individual reqs_em : msg_cmd1_t
+individual reqe_em : msg_cmd1_t
 
-type msg_cmd2_t = {empty2_em, inv_em, gnts_em, gnte_em}
+type msg_cmd2_t
+individual empty2_em : msg_cmd2_t
+individual inv_em : msg_cmd2_t
+individual gnts_em : msg_cmd2_t
+individual gnte_em : msg_cmd2_t
 
-type msg_cmd3_t = {empty3_em, invack_em}
+type msg_cmd3_t
+individual empty3_em : msg_cmd3_t
+individual invack_em : msg_cmd3_t
 
 individual cache_v_State(P:node_t) : cache_state_t
 individual cache_v_Data(F:node_t) : data_t
@@ -60,7 +72,24 @@ after init{
     
     require exgntd_v = false;
 
-require curcmd_v = empty1_em;
+    require curcmd_v = empty1_em;
+
+    assume i_em ~= s_em;
+	assume i_em ~= e_em;
+	assume s_em ~= e_em;
+
+	assume empty1_em ~= reqs_em;
+	assume empty1_em ~= reqe_em;
+	assume reqs_em ~= reqe_em;
+
+	assume empty2_em ~= inv_em;
+	assume empty2_em ~= gnts_em;
+	assume empty2_em ~= gnte_em;
+	assume inv_em ~= gnts_em;
+	assume inv_em ~= gnte_em;
+	assume gnts_em ~= gnte_em;
+
+	assume empty3_em ~= invack_em;
 
 }
 
